@@ -1,3 +1,11 @@
+"""Check that the Pokemon dataset in MongoDB Atlas has
+the correct amount of rows in it, and that the rows
+look fine. It was imported using
+mongoimport --host Cluster0-shard-0/cluster0-shard-00-00-q42xu.mongodb.net:27017,cluster0-shard-00-01-q42xu.mongodb.net:27017,
+cluster0-shard-00-02-q42xu.mongodb.net:27017 --ssl --username <USERNAME> --password <PASSWORD>
+--authenticationDatabase admin --db pokemon --collection all_data --type csv --file Pokemon_cleaned.csv --headerline
+"""
+
 #!/usr/bin/env python
 import os
 import pymongo
