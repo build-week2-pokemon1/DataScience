@@ -1,6 +1,4 @@
 import requests
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 import itertools
 
@@ -16,6 +14,11 @@ def pokemon(deck_page):
 
         soup = BeautifulSoup(r.text, 'html.parser')
         decklist_col = soup.find("div", {"class": "decklist-column"})
+
+        card_counts = [x.contents for x in decklist_col.find_all(
+            "span", {"class": "decklist-card-count"})]
+        card_counts = list(itertools.chain(*card_counts))
+
         card_names = [x.contents for x in decklist_col.find_all(
             "span", {"class": "decklist-card-name"})]
         card_names = list(itertools.chain(*card_names))
@@ -25,13 +28,7 @@ def pokemon(deck_page):
     except AttributeError as e:
         print(e) # Some pages may not have any data, so ignore those errors.
         return []
-    return card_names
-
-
-# def variants(page, all_data):
-#     r = requests.get(root_page + "/decks/?id=47")
-#     soup = BeautifulSoup(r.text, 'html.parser')
-#     soup.findAll("a", href=re.compile("\/decks\/\?id="))
+    return zip(card_counts, card_names)
 
 
 def decks(page, all_data):
@@ -56,12 +53,13 @@ def decks(page, all_data):
 all_data = []
 for page_count in range(1, 8):
     try:
+        print('page_count:', page_count)
         if page_count < 2:
             decks(first_decks, all_data)
         else:
-            print('page_count:', page_count)
             decks(first_decks + "&pg=" + str(page_count), all_data)
-            print(all_data)
+
+        print(all_data)
     except IOError as e:
         print(e)
         break;
@@ -69,8 +67,10 @@ for page_count in range(1, 8):
         print(e) # Some pages may not have any data, so ignore those errors.
 
 with open('./decks.csv', 'w') as f:
-    for (deck_name, points, card_names) in all_data:
-        for card_name in card_names:
+
+    f.write('Deck,Points,Card Count,Name')
+    for (deck_name, points, card_count_names) in all_data:
+        for (card_count, card_name) in card_count_names:
             s = str(deck_name) + ',' + str(points) + ',' + \
-                str(card_name) + '\n'
+                str(card_count) + ',' + str(card_name) + '\n'
             f.write(s)
